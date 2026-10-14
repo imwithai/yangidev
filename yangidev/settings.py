@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', "django-insecure-dev-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*, .onrender.com').split(',')
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 
 
 # Application definition
@@ -45,6 +47,7 @@ AUTH_USER_MODEL = 'core.User'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -78,14 +81,10 @@ WSGI_APPLICATION = "yangidev.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get('POSTGRES_DB', 'yangidev'),
-        "USER": os.environ.get('POSTGRES_USER', 'yangidev'),
-        "PASSWORD": os.environ.get('POSTGRES_PASSWORD', 'yangidev'),
-        "HOST": os.environ.get('POSTGRES_HOST', 'localhost'),
-        "PORT": os.environ.get('POSTGRES_PORT', '5432'),
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600
+    )
 }
 
 
@@ -128,6 +127,17 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# WhiteNoise Configuration
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+WHITENOISE_MANIFEST_STRICT = False
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

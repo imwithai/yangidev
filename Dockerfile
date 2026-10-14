@@ -17,11 +17,14 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy project
 COPY . /app/
 
-# Collect static files
-RUN python manage.py collectstatic --noinput || true
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
 
 # Expose port
 EXPOSE 8000
+
+# Set entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Run server with Gunicorn for production
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "yangidev.wsgi:application"]
