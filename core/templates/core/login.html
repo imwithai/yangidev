@@ -1,0 +1,30 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="card p-8">
+        <h1 class="text-2xl font-bold text-white mb-6 text-center">Tizimga kirish</h1>
+
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+            {% if form.errors %}
+            <div class="p-3 bg-red-900/50 border border-red-800 rounded-lg text-red-200 text-sm mb-4">
+                Login yoki parolda xatolik bor.
+            </div>
+            {% endif %}
+
+            <div>
+                <label class="block text-sm font-medium text-zinc-300 mb-1">Username</label>
+                <input type="text" name="username" class="input-field" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-zinc-300 mb-1">Parol</label>
+                <input type="password" name="password" class="input-field" required>
+            </div>
+            <button type="submit" class="btn-primary w-full mt-4">Kirish</button>
+        </form>
+        <div class="mt-6 text-center text-sm text-zinc-500">
+            Akkountingiz yo'qmi? <a href="{% url 'register' %}" class="text-blue-400 hover:text-blue-300">Ro'yxatdan o'tish</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

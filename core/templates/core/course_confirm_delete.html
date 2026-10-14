@@ -1,10 +1,16 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<h2>Delete Course</h2>
-<p>Are you sure you want to delete "{{ object.title }}"?</p>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Confirm</button>
-</form>
-<a href="{% url 'course-list' %}">Cancel</a>
+<div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="card p-8 text-center">
+        <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        <h1 class="text-2xl font-bold text-white mb-2">O'chirishni tasdiqlang</h1>
+        <p class="text-zinc-400 mb-8">Siz rostdan ham "{{ object.title }}" kursini o'chirmoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi.</p>
+
+        <form method="post" class="flex items-center justify-center gap-4">
+            {% csrf_token %}
+            <a href="{% url 'course-list' %}" class="btn-secondary">Bekor qilish</a>
+            <button type="submit" class="inline-flex justify-center items-center px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors">O'chirish</button>
+        </form>
+    </div>
+</div>
 {% endblock %}

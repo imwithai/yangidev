@@ -1,0 +1,76 @@
+{% extends 'core/base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {% if not_enrolled %}
+    <div class="card p-8 text-center max-w-2xl mx-auto">
+        <svg class="w-16 h-16 text-zinc-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <h2 class="text-2xl font-bold text-white mb-2">Ruxsat etilmagan</h2>
+        <p class="text-zinc-400 mb-6">Ushbu darsni ko'rish uchun avval kursga yozilishingiz kerak.</p>
+        <a href="{% url 'course-detail' lesson.course.pk %}" class="btn-primary">Kursga qaytish</a>
+    </div>
+    {% else %}
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Main Player Area -->
+        <div class="lg:w-3/4 space-y-6">
+            <div class="card overflow-hidden">
+                <div class="aspect-video bg-black relative">
+                    {% if lesson.video_url %}
+                        {% if 'youtube.com' in lesson.video_url or 'youtu.be' in lesson.video_url %}
+                            <iframe src="{{ lesson.video_url|replace:'watch?v=,embed/'|replace:'youtu.be/,youtube.com/embed/' }}"
+                                    class="absolute top-0 left-0 w-full h-full"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                            </iframe>
+                        {% else %}
+                            <div class="absolute inset-0 flex items-center justify-center text-zinc-500">
+                                Video URL format is not supported for iframe embedding directly. <a href="{{ lesson.video_url }}" target="_blank" class="text-blue-400 ml-1">Open link</a>.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="absolute inset-0 flex items-center justify-center text-zinc-500">
+                            Video mavjud emas
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h1 class="text-2xl font-bold text-white mb-4">{{ lesson.title }}</h1>
+                <div class="prose prose-invert max-w-none text-zinc-300">
+                    {{ lesson.content|linebreaks }}
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-zinc-800 flex justify-end">
+                    <button class="btn-secondary flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Darsni yakunlash
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Lessons -->
+        <div class="lg:w-1/4">
+            <div class="card sticky top-24 max-h-[calc(100vh-8rem)] flex flex-col">
+                <div class="p-4 border-b border-zinc-800">
+                    <h3 class="font-bold text-white">{{ lesson.course.title }}</h3>
+                    <p class="text-sm text-zinc-400 mt-1">{{ all_lessons.count }} ta dars</p>
+                </div>
+                <div class="overflow-y-auto p-2 space-y-1">
+                    {% for l in all_lessons %}
+                    <a href="{% url 'classroom' l.pk %}" class="flex items-start gap-3 p-3 rounded-lg transition-colors {% if l.pk == lesson.pk %}bg-zinc-800 text-white{% else %}text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200{% endif %}">
+                        <div class="w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-medium border {% if l.pk == lesson.pk %}border-blue-500 bg-blue-500/10 text-blue-400{% else %}border-zinc-700 bg-zinc-800{% endif %}">
+                            {{ forloop.counter }}
+                        </div>
+                        <span class="text-sm font-medium line-clamp-2 mt-0.5">{{ l.title }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

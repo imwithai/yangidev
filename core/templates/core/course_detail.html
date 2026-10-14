@@ -1,13 +1,89 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<h2>{{ course.title }}</h2>
-<p>Category: {{ course.category.name }}</p>
-{% if course.cover_image %}
-    <img src="{{ course.cover_image.url }}" alt="{{ course.title }} Cover" style="max-width: 300px;">
-{% endif %}
-<p>{{ course.description }}</p>
-<a href="{% url 'course-edit' course.pk %}">Edit</a>
-<a href="{% url 'course-delete' course.pk %}">Delete</a>
-<br>
-<a href="{% url 'course-list' %}">Back to Courses</a>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col lg:flex-row gap-10">
+        <!-- Main Content -->
+        <div class="lg:w-2/3 space-y-8">
+            <div class="space-y-4">
+                <div class="inline-block px-3 py-1 bg-zinc-800 rounded-md text-sm font-medium text-zinc-400">
+                    {{ course.category.name }}
+                </div>
+                <h1 class="text-3xl md:text-5xl font-bold text-white leading-tight">{{ course.title }}</h1>
+                <p class="text-lg text-zinc-400 leading-relaxed">{{ course.description }}</p>
+            </div>
+
+            <!-- Lessons Accordion/List -->
+            <div class="card p-6">
+                <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                    Kurs Tarkibi
+                </h2>
+                <div class="space-y-3">
+                    {% for lesson in lessons %}
+                    <div class="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-400">
+                                {{ forloop.counter }}
+                            </div>
+                            <span class="text-white font-medium">{{ lesson.title }}</span>
+                        </div>
+                        {% if is_enrolled %}
+                        <a href="{% url 'classroom' lesson.pk %}" class="text-sm font-medium text-blue-400 hover:text-blue-300">Darsni ko'rish &rarr;</a>
+                        {% else %}
+                        <svg class="w-5 h-5 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="text-zinc-500 text-center py-4">Hali darslar qo'shilmagan.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:w-1/3">
+            <div class="card p-6 sticky top-24">
+                <div class="aspect-video rounded-lg overflow-hidden bg-zinc-800 mb-6">
+                    {% if course.cover_image %}
+                    <img src="{{ course.cover_image.url }}" alt="{{ course.title }}" class="object-cover w-full h-full">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-zinc-600">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-6">
+                    <div class="flex items-center gap-3 text-zinc-300">
+                        <svg class="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <span>{{ enrollment_count }} ta o'quvchi ro'yxatdan o'tgan</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-zinc-300">
+                        <svg class="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        <span>{{ lessons.count }} ta dars</span>
+                    </div>
+
+                    <div class="pt-6 border-t border-zinc-800">
+                        {% if user.is_authenticated %}
+                            {% if is_enrolled %}
+                                {% if lessons %}
+                                    <a href="{% url 'classroom' lessons.first.pk %}" class="btn-primary w-full text-lg py-3">Darsni Boshlash</a>
+                                {% else %}
+                                    <button class="btn-secondary w-full text-lg py-3 opacity-50 cursor-not-allowed" disabled>Darslar kutilmoqda</button>
+                                {% endif %}
+                            {% else %}
+                                <form method="post" action="{% url 'course-enroll' course.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-primary w-full text-lg py-3">Kursga yozilish</button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'login' %}?next={{ request.path }}" class="btn-primary w-full text-lg py-3 text-center">Kirish va Yozilish</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

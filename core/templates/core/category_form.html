@@ -1,10 +1,27 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<h2>{% if object %}Edit Category{% else %}Add Category{% endif %}</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
-<a href="{% url 'category-list' %}">Cancel</a>
+<div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="card p-8">
+        <h1 class="text-2xl font-bold text-white mb-6">{% if object %}Kategoriyani tahrirlash{% else %}Kategoriya qo'shish{% endif %}</h1>
+
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div>
+                <label class="block text-sm font-medium text-zinc-300 mb-1">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}
+                <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <div class="pt-6 flex items-center justify-between">
+                <button type="submit" class="btn-primary">Saqlash</button>
+                <a href="{% url 'category-list' %}" class="text-sm text-zinc-400 hover:text-white">Bekor qilish</a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
