@@ -35,6 +35,17 @@
             }
         }
     </script>
+    <style>
+        /* Essential Fallback Styles to prevent FOUC and giant SVGs if Tailwind CDN fails/loads late */
+        body {
+            background-color: #09090b !important;
+            color: #f4f4f5 !important;
+        }
+        svg {
+            max-width: 2rem;
+            max-height: 2rem;
+        }
+    </style>
     <style type="text/tailwindcss">
         @layer utilities {
             .bg-glass {
