@@ -1,0 +1,13 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h2>{{ course.title }}</h2>
+<p>Category: {{ course.category.name }}</p>
+{% if course.cover_image %}
+    <img src="{{ course.cover_image.url }}" alt="{{ course.title }} Cover" style="max-width: 300px;">
+{% endif %}
+<p>{{ course.description }}</p>
+<a href="{% url 'course-edit' course.pk %}">Edit</a>
+<a href="{% url 'course-delete' course.pk %}">Delete</a>
+<br>
+<a href="{% url 'course-list' %}">Back to Courses</a>
+{% endblock %}
