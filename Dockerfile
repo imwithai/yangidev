@@ -20,6 +20,14 @@ COPY . /app/
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh
 
+# Install Tailwind CLI, compile CSS, and clean up CLI
+RUN apt-get update && apt-get install -y curl && \
+    curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.17/tailwindcss-linux-x64 && \
+    chmod +x tailwindcss-linux-x64 && \
+    mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss && \
+    tailwindcss -i core/static/core/css/input.css -o core/static/core/css/tailwind.css --minify && \
+    rm /usr/local/bin/tailwindcss
+
 # Expose port
 EXPOSE 8000
 

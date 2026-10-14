@@ -1,76 +1,37 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="uz" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ site_settings.site_name|default:"Yangidev" }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        zinc: {
-                            850: '#202024',
-                            900: '#18181b',
-                            950: '#09090b',
-                        }
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.6s ease-out forwards',
-                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(30px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+
+    <!-- Main Local Compiled Tailwind CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/tailwind.css' %}">
+
+    <!-- Fallback Tailwind CSS CDN if local build is missing -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
     <style>
-        /* Essential Fallback Styles to prevent FOUC and giant SVGs if Tailwind CDN fails/loads late */
+        /* Comprehensive Fallback Styles to guarantee layout structure and styling even if Tailwind fails entirely */
+        html {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            -webkit-text-size-adjust: 100%;
+            line-height: 1.5;
+        }
         body {
             background-color: #09090b !important;
             color: #f4f4f5 !important;
+            margin: 0;
+        }
+        a {
+            text-decoration: none !important;
+            color: inherit;
         }
         svg {
             max-width: 2rem;
             max-height: 2rem;
-        }
-    </style>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .bg-glass {
-                @apply bg-zinc-900/70 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] supports-[backdrop-filter]:bg-zinc-900/60;
-            }
-            .card {
-                @apply bg-zinc-900/50 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden transition-all duration-500 hover:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_32px_rgba(255,255,255,0.08)] hover:-translate-y-1 group relative;
-            }
-            .card::before {
-                content: '';
-                @apply absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 pointer-events-none;
-                background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 100%);
-            }
-            .card:hover::before {
-                @apply opacity-100;
-            }
-            .btn-primary {
-                @apply inline-flex justify-center items-center px-5 py-2.5 bg-white backdrop-blur-sm text-black font-semibold rounded-xl hover:bg-zinc-200 transition-all duration-300 hover:scale-[1.02] active:scale-95 focus:ring-2 focus:ring-offset-2 focus:ring-white/50 focus:ring-offset-zinc-950 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)];
-            }
-            .btn-secondary {
-                @apply inline-flex justify-center items-center px-5 py-2.5 bg-zinc-800/60 backdrop-blur-xl text-white font-medium rounded-xl hover:bg-zinc-700/80 transition-all duration-300 hover:scale-[1.02] active:scale-95 border border-white/10 shadow-lg hover:shadow-xl;
-            }
-            .input-field {
-                @apply w-full bg-zinc-900/60 backdrop-blur-xl border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/20 transition-all duration-300 shadow-inner;
-            }
+            display: inline-block;
         }
     </style>
 </head>
