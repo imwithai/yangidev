@@ -12,14 +12,15 @@
             </div>
             {% endif %}
 
+            {% for field in form %}
             <div>
-                <label class="block text-sm font-medium text-zinc-300 mb-1">Username</label>
-                <input type="text" name="username" class="input-field" required>
+                <label class="block text-sm font-medium text-zinc-300 mb-1">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}
+                <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
             </div>
-            <div>
-                <label class="block text-sm font-medium text-zinc-300 mb-1">Parol</label>
-                <input type="password" name="password" class="input-field" required>
-            </div>
+            {% endfor %}
             <button type="submit" class="btn-primary w-full mt-4">Kirish</button>
         </form>
         <div class="mt-6 text-center text-sm text-zinc-500">

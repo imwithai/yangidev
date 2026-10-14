@@ -118,15 +118,30 @@ class ClassroomView(LoginRequiredMixin, DetailView):
             context['all_lessons'] = lesson.course.lessons.all()
         return context
 
-class UserProfileForm(forms.ModelForm):
+class TailwindFormMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({
+                'class': 'w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-white'
+            })
+            field.help_text = ''
+
+class UserProfileForm(TailwindFormMixin, forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'telegram', 'email']
+        labels = {
+            'first_name': 'Ism',
+            'last_name': 'Familiya',
+            'telegram': 'Telegram',
+            'email': 'Email',
+        }
 
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
         user_form = UserProfileForm(instance=request.user)
-        password_form = PasswordChangeForm(request.user)
+        password_form = CustomPasswordChangeForm(request.user)
         return render(request, 'core/profile.html', {
             'user_form': user_form,
             'password_form': password_form
@@ -134,7 +149,7 @@ class ProfileView(LoginRequiredMixin, View):
 
     def post(self, request):
         user_form = UserProfileForm(request.POST, instance=request.user)
-        password_form = PasswordChangeForm(request.user, request.POST)
+        password_form = CustomPasswordChangeForm(request.user, request.POST)
 
         if 'update_profile' in request.POST:
             if user_form.is_valid():
@@ -151,10 +166,37 @@ class ProfileView(LoginRequiredMixin, View):
             'password_form': password_form
         })
 
-class CustomUserCreationForm(UserCreationForm):
+class CustomUserCreationForm(TailwindFormMixin, UserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'password1' in self.fields:
+            self.fields['password1'].label = 'Parol'
+        if 'password2' in self.fields:
+            self.fields['password2'].label = 'Parolni tasdiqlang'
+
     class Meta(UserCreationForm.Meta):
         model = User
         fields = UserCreationForm.Meta.fields + ('email', 'first_name', 'last_name', 'telegram')
+        labels = {
+            'username': 'Username',
+            'first_name': 'Ism',
+            'last_name': 'Familiya',
+            'email': 'Email',
+            'telegram': 'Telegram',
+        }
+
+class CustomAuthenticationForm(TailwindFormMixin, AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = 'Username'
+        self.fields['password'].label = 'Parol'
+
+class CustomPasswordChangeForm(TailwindFormMixin, PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['old_password'].label = 'Eski parol'
+        self.fields['new_password1'].label = 'Yangi parol'
+        self.fields['new_password2'].label = 'Yangi parolni tasdiqlang'
 
 def register_view(request):
     if request.method == 'POST':
@@ -169,13 +211,13 @@ def register_view(request):
 
 def login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
+        form = CustomAuthenticationForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
             return redirect('home')
     else:
-        form = AuthenticationForm()
+        form = CustomAuthenticationForm()
     return render(request, 'core/login.html', {'form': form})
 
 def logout_view(request):
