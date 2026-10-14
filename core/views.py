@@ -16,23 +16,15 @@ class CategoryListView(ListView):
     template_name = 'core/category_list.html'
     context_object_name = 'categories'
 
-class CategoryCreateView(AdminRequiredMixin, CreateView):
+class CategoryDetailView(DetailView):
     model = Category
-    template_name = 'core/category_form.html'
-    fields = ['name', 'slug']
-    success_url = reverse_lazy('category-list')
+    template_name = 'core/category_detail.html'
+    context_object_name = 'category'
 
-class CategoryUpdateView(AdminRequiredMixin, UpdateView):
-    model = Category
-    template_name = 'core/category_form.html'
-    fields = ['name', 'slug']
-    success_url = reverse_lazy('category-list')
-
-class CategoryDeleteView(AdminRequiredMixin, DeleteView):
-    model = Category
-    template_name = 'core/category_confirm_delete.html'
-    success_url = reverse_lazy('category-list')
-
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['courses'] = self.get_object().courses.annotate(enrollment_count=models.Count('enrollments'))
+        return context
 
 # Course Views
 class CourseListView(ListView):
@@ -50,28 +42,23 @@ class CourseDetailView(DetailView):
         course = self.get_object()
         context['enrollment_count'] = course.enrollments.count()
         context['lessons'] = course.lessons.all()
+
         if self.request.user.is_authenticated:
             context['is_enrolled'] = course.enrollments.filter(user=self.request.user).exists()
+            completed = self.request.user.lesson_progress.filter(lesson__course=course, is_completed=True).values_list('lesson_id', flat=True)
+            context['completed_lessons'] = list(completed)
+            context['completed_count'] = len(completed)
+            if context['lessons'].count() > 0:
+                context['progress_percentage'] = int((len(completed) / context['lessons'].count()) * 100)
+            else:
+                context['progress_percentage'] = 0
         else:
             context['is_enrolled'] = False
+            context['completed_lessons'] = []
+            context['completed_count'] = 0
+            context['progress_percentage'] = 0
+
         return context
-
-class CourseCreateView(AdminRequiredMixin, CreateView):
-    model = Course
-    template_name = 'core/course_form.html'
-    fields = ['category', 'title', 'description', 'cover_image']
-    success_url = reverse_lazy('course-list')
-
-class CourseUpdateView(AdminRequiredMixin, UpdateView):
-    model = Course
-    template_name = 'core/course_form.html'
-    fields = ['category', 'title', 'description', 'cover_image']
-    success_url = reverse_lazy('course-list')
-
-class CourseDeleteView(AdminRequiredMixin, DeleteView):
-    model = Course
-    template_name = 'core/course_confirm_delete.html'
-    success_url = reverse_lazy('course-list')
 
 
 from django.contrib.auth import login, authenticate, logout
@@ -81,7 +68,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import TemplateView
 from django.db.models import Count
-from .models import Enrollment, Lesson, User
+from .models import Enrollment, Lesson, User, Instructor, LessonProgress
 from django import forms
 
 class HomeView(TemplateView):
@@ -92,6 +79,7 @@ class HomeView(TemplateView):
         context['categories'] = Category.objects.prefetch_related(
             models.Prefetch('courses', queryset=Course.objects.annotate(enrollment_count=Count('enrollments')))
         )
+        context['instructors'] = Instructor.objects.all()
         return context
 
 class EnrollView(LoginRequiredMixin, View):
@@ -111,12 +99,42 @@ class ClassroomView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         lesson = self.get_object()
-        # Ensure user is enrolled
-        if not Enrollment.objects.filter(user=self.request.user, course=lesson.course).exists():
-            context['not_enrolled'] = True
+
+        # Auto-enroll user if they visit classroom directly but aren't enrolled
+        Enrollment.objects.get_or_create(user=self.request.user, course=lesson.course)
+
+        all_lessons = lesson.course.lessons.all()
+        context['all_lessons'] = all_lessons
+
+        completed = self.request.user.lesson_progress.filter(lesson__course=lesson.course, is_completed=True).values_list('lesson_id', flat=True)
+        context['completed_lessons'] = list(completed)
+        context['completed_count'] = len(completed)
+
+        if all_lessons.count() > 0:
+            context['progress_percentage'] = int((len(completed) / all_lessons.count()) * 100)
         else:
-            context['all_lessons'] = lesson.course.lessons.all()
+            context['progress_percentage'] = 0
+
         return context
+
+class CompleteLessonView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        lesson = get_object_or_404(Lesson, pk=pk)
+
+        # Auto-enroll if not enrolled
+        Enrollment.objects.get_or_create(user=request.user, course=lesson.course)
+
+        # Mark as completed
+        progress, created = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
+        progress.is_completed = True
+        progress.save()
+
+        # Find next lesson
+        next_lesson = Lesson.objects.filter(course=lesson.course, lesson_order__gt=lesson.lesson_order).order_by('lesson_order').first()
+
+        if next_lesson:
+            return redirect('classroom', pk=next_lesson.pk)
+        return redirect('course-detail', pk=lesson.course.pk)
 
 class TailwindFormMixin:
     def __init__(self, *args, **kwargs):

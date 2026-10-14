@@ -3,25 +3,16 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
         <h1 class="text-3xl font-bold text-white">Kategoriyalar</h1>
-        {% if user.is_staff %}
-        <a href="{% url 'category-add' %}" class="btn-primary">Kategoriya qo'shish</a>
-        {% endif %}
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {% for category in categories %}
-        <div class="card p-6 flex flex-col justify-between">
+        <a href="{% url 'category-detail' category.slug %}" class="card p-6 flex flex-col justify-between hover:border-zinc-600 transition-colors">
             <div>
                 <h3 class="text-xl font-bold text-white mb-2">{{ category.name }}</h3>
                 <p class="text-zinc-400 text-sm mb-4">{{ category.courses.count }} ta kurs</p>
             </div>
-            {% if user.is_staff %}
-            <div class="flex items-center gap-3 pt-4 border-t border-zinc-800">
-                <a href="{% url 'category-edit' category.pk %}" class="text-sm font-medium text-blue-400 hover:text-blue-300">Tahrirlash</a>
-                <a href="{% url 'category-delete' category.pk %}" class="text-sm font-medium text-red-400 hover:text-red-300">O'chirish</a>
-            </div>
-            {% endif %}
-        </div>
+        </a>
         {% empty %}
         <div class="col-span-full text-center py-12 text-zinc-500">
             Hali kategoriyalar mavjud emas.

@@ -5,11 +5,10 @@
     <div class="absolute inset-0 bg-gradient-to-b from-zinc-800/20 to-transparent"></div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-500">Kelajak kasblarini</span><br>
-            biz bilan o'rganing
+            {{ site_settings.hero_title|default:"Kelajak kasblarini biz bilan o'rganing" }}
         </h1>
         <p class="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10">
-            Eng zamonaviy texnologiyalar, amaliy loyihalar va tajribali ustozlar yordamida dasturlashni noldan professional darajagacha o'rganing.
+            {{ site_settings.hero_description|default:"Eng zamonaviy texnologiyalar, amaliy loyihalar va tajribali ustozlar yordamida dasturlashni noldan professional darajagacha o'rganing." }}
         </p>
         <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
             <a href="{% url 'course-list' %}" class="btn-primary text-lg px-8 py-3 w-full sm:w-auto">Barcha Kurslar</a>
@@ -26,7 +25,8 @@
         {% if category.courses.all %}
         <div>
             <div class="flex items-center justify-between mb-8">
-                <h2 class="text-2xl font-bold text-white">{{ category.name }}</h2>
+                <h2 class="text-2xl font-bold text-white"><a href="{% url 'category-detail' category.slug %}" class="hover:text-zinc-300">{{ category.name }}</a></h2>
+                <a href="{% url 'category-detail' category.slug %}" class="text-sm font-medium text-blue-400 hover:text-blue-300">Barchasini ko'rish &rarr;</a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -66,5 +66,46 @@
             Hozircha kurslar mavjud emas.
         </div>
     {% endfor %}
+</section>
+
+<!-- Instructors Section -->
+{% if instructors %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-zinc-800">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-white mb-4">Tajribali ustozlar</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Sohaning yetuk mutaxassislaridan ta'lim oling</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {% for instructor in instructors %}
+        <div class="card p-6 flex flex-col items-center text-center">
+            <div class="w-32 h-32 rounded-full overflow-hidden bg-zinc-800 mb-6 border-4 border-zinc-900 shadow-xl">
+                {% if instructor.image %}
+                <img src="{{ instructor.image.url }}" alt="{{ instructor.name }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-zinc-600">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                </div>
+                {% endif %}
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">{{ instructor.name }}</h3>
+            <p class="text-zinc-400 text-sm line-clamp-4">{{ instructor.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Support Section -->
+<section class="bg-zinc-900 border-t border-b border-zinc-800 py-16">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">{{ site_settings.support_title|default:"Loyihani qo'llab-quvvatlash" }}</h2>
+        <p class="text-lg text-zinc-400 mb-8">
+            {{ site_settings.support_description|default:"Platformamiz rivoji va yangi bepul darsliklar chiqishiga o'z hissangizni qo'shing." }}
+        </p>
+        {% if site_settings.support_url %}
+        <a href="{{ site_settings.support_url }}" target="_blank" rel="noopener noreferrer" class="btn-primary text-lg px-8 py-3">Qo'llab-quvvatlash</a>
+        {% endif %}
+    </div>
 </section>
 {% endblock %}

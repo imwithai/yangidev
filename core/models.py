@@ -17,11 +17,22 @@ class User(AbstractUser):
         return self.username
 
 class SiteSettings(models.Model):
-    copyright_text = models.CharField(max_length=255)
+    site_name = models.CharField(max_length=150, default='Yangidev')
+    logo = models.ImageField(upload_to='site/', blank=True, null=True)
+
+    hero_title = models.CharField(max_length=255, default="Kelajak kasblarini biz bilan o'rganing")
+    hero_description = models.TextField(default="Eng zamonaviy texnologiyalar, amaliy loyihalar va tajribali ustozlar yordamida dasturlashni noldan professional darajagacha o'rganing.")
+
+    copyright_text = models.CharField(max_length=255, default='© 2026 Yangidev. Barcha huquqlar himoyalangan.')
+
     telegram_url = models.URLField(blank=True, null=True)
     instagram_url = models.URLField(blank=True, null=True)
     github_url = models.URLField(blank=True, null=True)
     youtube_url = models.URLField(blank=True, null=True)
+
+    support_title = models.CharField(max_length=255, default="Loyihani qo'llab-quvvatlash")
+    support_description = models.TextField(default="Platformamiz rivoji va yangi bepul darsliklar chiqishiga o'z hissangizni qo'shing.")
+    support_url = models.URLField(blank=True, null=True, help_text="Link for supporting/donating to the project")
 
     class Meta:
         verbose_name = 'Site Settings'
@@ -80,3 +91,27 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return f"{self.user.username} enrolled in {self.course.title}"
+
+class Instructor(models.Model):
+    name = models.CharField(max_length=150)
+    image = models.ImageField(upload_to='instructors/', blank=True, null=True)
+    description = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name
+
+class LessonProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='lesson_progress')
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='progress')
+    is_completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'lesson')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.lesson.title} - {'Completed' if self.is_completed else 'In Progress'}"

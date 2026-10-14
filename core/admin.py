@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, SiteSettings, Category, Course, Lesson, Enrollment
+from .models import User, SiteSettings, Category, Course, Lesson, Enrollment, Instructor, LessonProgress
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -12,7 +12,7 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ('copyright_text', 'telegram_url', 'instagram_url')
+    list_display = ('site_name', 'hero_title')
 
     def has_add_permission(self, request):
         if self.model.objects.exists():
@@ -48,3 +48,15 @@ class EnrollmentAdmin(admin.ModelAdmin):
     list_display = ('user', 'course', 'enrolled_at')
     search_fields = ('user__username', 'course__title')
     list_filter = ('course',)
+
+@admin.register(Instructor)
+class InstructorAdmin(admin.ModelAdmin):
+    list_display = ('name', 'order')
+    search_fields = ('name',)
+    ordering = ('order',)
+
+@admin.register(LessonProgress)
+class LessonProgressAdmin(admin.ModelAdmin):
+    list_display = ('user', 'lesson', 'is_completed', 'completed_at')
+    list_filter = ('is_completed', 'lesson__course')
+    search_fields = ('user__username', 'lesson__title')
