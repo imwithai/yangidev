@@ -48,6 +48,16 @@ class CourseDetailView(DetailView):
             completed = self.request.user.lesson_progress.filter(lesson__course=course, is_completed=True).values_list('lesson_id', flat=True)
             context['completed_lessons'] = list(completed)
             context['completed_count'] = len(completed)
+
+            # Find next lesson
+            if context['lessons'].exists():
+                next_lesson = context['lessons'].exclude(id__in=completed).order_by('lesson_order').first()
+                if not next_lesson: # If all completed, return the last lesson
+                    next_lesson = context['lessons'].order_by('-lesson_order').first()
+                context['next_lesson'] = next_lesson
+            else:
+                context['next_lesson'] = None
+
             if context['lessons'].count() > 0:
                 context['progress_percentage'] = int((len(completed) / context['lessons'].count()) * 100)
             else:
@@ -57,6 +67,7 @@ class CourseDetailView(DetailView):
             context['completed_lessons'] = []
             context['completed_count'] = 0
             context['progress_percentage'] = 0
+            context['next_lesson'] = context['lessons'].first() if context['lessons'].exists() else None
 
         return context
 
@@ -141,7 +152,7 @@ class TailwindFormMixin:
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.update({
-                'class': 'w-full bg-zinc-900 border border-zinc-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-white'
+                'class': 'w-full bg-zinc-900/50 backdrop-blur-sm border border-white/10 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all shadow-inner'
             })
             field.help_text = ''
 
