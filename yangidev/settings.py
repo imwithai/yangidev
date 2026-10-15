@@ -30,6 +30,17 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*, .onrender.com').split(',')
 CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 't')
+
 
 # Application definition
 

@@ -16,13 +16,18 @@ Including another URLconf
 """
 
 from django.contrib import admin
+import os
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
 
+admin_url = os.environ.get('ADMIN_URL', 'admin/')
+if not admin_url.endswith('/'):
+    admin_url += '/'
+
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path(admin_url, admin.site.urls),
     path("", include("core.urls")),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]

@@ -141,7 +141,17 @@ class CompleteLessonView(LoginRequiredMixin, View):
         progress.save()
 
         # Find next lesson
-        next_lesson = Lesson.objects.filter(course=lesson.course, lesson_order__gt=lesson.lesson_order).order_by('lesson_order').first()
+        next_lesson = Lesson.objects.filter(
+            course=lesson.course,
+            lesson_order__gt=lesson.lesson_order
+        ).order_by('lesson_order', 'id').first()
+
+        if not next_lesson:
+            next_lesson = Lesson.objects.filter(
+                course=lesson.course,
+                lesson_order=lesson.lesson_order,
+                id__gt=lesson.id
+            ).order_by('id').first()
 
         if next_lesson:
             return redirect('classroom', pk=next_lesson.pk)
@@ -227,8 +237,33 @@ class CustomPasswordChangeForm(TailwindFormMixin, PasswordChangeForm):
         self.fields['new_password1'].label = 'Yangi parol'
         self.fields['new_password2'].label = 'Yangi parolni tasdiqlang'
 
+from django.core.cache import cache
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+def check_rate_limit(ip, action):
+    key = f"rate_limit_{action}_{ip}"
+    attempts = cache.get(key, 0)
+    if attempts >= 5:
+        return False
+    cache.set(key, attempts + 1, timeout=300) # Block for 5 minutes after 5 attempts
+    return True
+
 def register_view(request):
     if request.method == 'POST':
+        ip = get_client_ip(request)
+        if not check_rate_limit(ip, 'register'):
+            return render(request, 'core/register.html', {
+                'form': CustomUserCreationForm(),
+                'error_message': 'Juda ko\'p urinishlar. Iltimos, 5 daqiqadan so\'ng qayta urinib ko\'ring.'
+            })
+
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -240,8 +275,17 @@ def register_view(request):
 
 def login_view(request):
     if request.method == 'POST':
+        ip = get_client_ip(request)
+        if not check_rate_limit(ip, 'login'):
+            return render(request, 'core/login.html', {
+                'form': CustomAuthenticationForm(),
+                'error_message': 'Juda ko\'p urinishlar. Iltimos, 5 daqiqadan so\'ng qayta urinib ko\'ring.'
+            })
+
         form = CustomAuthenticationForm(data=request.POST)
         if form.is_valid():
+            # Clear rate limit on successful login
+            cache.delete(f"rate_limit_login_{ip}")
             user = form.get_user()
             login(request, user)
             return redirect('home')

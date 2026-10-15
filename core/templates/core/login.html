@@ -6,7 +6,11 @@
 
         <form method="post" class="space-y-5">
             {% csrf_token %}
-            {% if form.errors %}
+            {% if error_message %}
+            <div class="p-3 bg-red-900/50 border border-red-800 rounded-lg text-red-200 text-sm mb-4">
+                {{ error_message }}
+            </div>
+            {% elif form.errors %}
             <div class="p-3 bg-red-900/50 border border-red-800 rounded-lg text-red-200 text-sm mb-4">
                 Login yoki parolda xatolik bor.
             </div>
