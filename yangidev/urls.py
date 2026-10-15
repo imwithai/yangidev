@@ -29,7 +29,6 @@ if not admin_url.endswith('/'):
 urlpatterns = [
     path(admin_url, admin.site.urls),
     path("", include("core.urls")),
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
 
 if settings.DEBUG:

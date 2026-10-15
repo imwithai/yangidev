@@ -79,8 +79,18 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import TemplateView
 from django.db.models import Count
-from .models import Enrollment, Lesson, User, Instructor, LessonProgress
+from .models import Enrollment, Lesson, User, Instructor, LessonProgress, DatabaseMediaFile
 from django import forms
+from django.http import HttpResponse, Http404
+
+def serve_media(request, name):
+    try:
+        db_file = DatabaseMediaFile.objects.get(name=name)
+        response = HttpResponse(db_file.content, content_type=db_file.content_type)
+        response['Cache-Control'] = 'public, max-age=31536000'
+        return response
+    except DatabaseMediaFile.DoesNotExist:
+        raise Http404("Media file does not exist")
 
 class HomeView(TemplateView):
     template_name = 'core/home.html'
